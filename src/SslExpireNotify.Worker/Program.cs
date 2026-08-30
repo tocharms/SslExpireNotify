@@ -6,6 +6,11 @@ using Serilog;
 using SslExpireNotify.Worker;
 using SslExpireNotify.Worker.Options;
 
+// A Windows Service starts with %SystemRoot%\System32 as its current directory. Serilog's rolling
+// file sink resolves a relative path against that directory, not against the executable's own folder,
+// so without this every log line ends up under System32\logs instead of the install folder.
+Directory.SetCurrentDirectory(AppContext.BaseDirectory);
+
 // Subjects and templates are Thai; without this the console renders them as mojibake when the service
 // is run interactively. Fails silently when there is no console (i.e. when running as a service).
 try

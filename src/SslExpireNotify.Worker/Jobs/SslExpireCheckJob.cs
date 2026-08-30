@@ -45,43 +45,47 @@ public sealed class SslExpireCheckJob : IJob
         // Every log line of this run carries the RunId so a run can be followed end to end.
         using var runScope = LogContext.PushProperty("RunId", runId);
 
-        await using var jobLock = await _jobLock.TryAcquireAsync(cancellationToken).ConfigureAwait(false);
-        if (jobLock is null)
-        {
-            _logger.LogWarning("Another instance holds the job lock; this run is skipped entirely.");
-            return;
-        }
-
-        var startedAt = _clock.Now;
-        await _history.StartAsync(runId, startedAt, _options.DryRun, cancellationToken).ConfigureAwait(false);
-
-        _logger.LogInformation(
-            "SSL expiry check started at {StartedAt:yyyy-MM-dd HH:mm:ss} ({TimeZone}), DryRun={DryRun}",
-            startedAt, _clock.TimeZone.Id, _options.DryRun);
-
-        JobRunSummary summary;
-
+        // Everything here needs a database connection (the lock, the history row, the scan itself), so
+        // a single try/catch covers all of it: a DB outage at any point must still be logged clearly and
+        // recorded as Failed rather than escaping as a raw, uncorrelated exception straight to Quartz.
         try
         {
-            summary = await _alertService.RunAsync(runId, cancellationToken).ConfigureAwait(false);
+            await using var jobLock = await _jobLock.TryAcquireAsync(cancellationToken).ConfigureAwait(false);
+            if (jobLock is null)
+            {
+                _logger.LogWarning("Another instance holds the job lock; this run is skipped entirely.");
+                return;
+            }
+
+            var startedAt = _clock.Now;
+            await _history.StartAsync(runId, startedAt, _options.DryRun, cancellationToken).ConfigureAwait(false);
+
+            _logger.LogInformation(
+                "SSL expiry check started at {StartedAt:yyyy-MM-dd HH:mm:ss} ({TimeZone}), DryRun={DryRun}",
+                startedAt, _clock.TimeZone.Id, _options.DryRun);
+
+            var summary = await _alertService.RunAsync(runId, cancellationToken).ConfigureAwait(false);
+
+            await SafeFinishAsync(runId, JobRunStatus.Completed, summary, null, cancellationToken).ConfigureAwait(false);
+
+            _logger.LogInformation(
+                "SSL expiry check completed: scanned {Scanned}, resolved {Resolved}, created {Created}, resent {Resent}, superseded {Superseded}, sent {Sent}, failed {Failed}, fallback {Fallback}",
+                summary.CertificatesScanned, summary.AlertsResolved, summary.AlertsCreated, summary.AlertsResent,
+                summary.AlertsSuperseded, summary.EmailsSent, summary.EmailsFailed, summary.EmailsSentViaFallback);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "SSL expiry check failed and did not complete");
 
+            // A best-effort update: if the database is unreachable this fails too, silently (nothing to
+            // update if the Running row was never written), which is the best that can be done when the
+            // failure is the database itself.
             await SafeFinishAsync(runId, JobRunStatus.Failed, new JobRunSummary(), ex.ToString(), cancellationToken)
                 .ConfigureAwait(false);
 
             // Never swallow it: Quartz has to see the failure too.
             throw new JobExecutionException(ex, refireImmediately: false);
         }
-
-        await SafeFinishAsync(runId, JobRunStatus.Completed, summary, null, cancellationToken).ConfigureAwait(false);
-
-        _logger.LogInformation(
-            "SSL expiry check completed: scanned {Scanned}, resolved {Resolved}, created {Created}, resent {Resent}, superseded {Superseded}, sent {Sent}, failed {Failed}, fallback {Fallback}",
-            summary.CertificatesScanned, summary.AlertsResolved, summary.AlertsCreated, summary.AlertsResent,
-            summary.AlertsSuperseded, summary.EmailsSent, summary.EmailsFailed, summary.EmailsSentViaFallback);
     }
 
     private async Task SafeFinishAsync(Guid runId, string status, JobRunSummary summary, string? error, CancellationToken cancellationToken)
