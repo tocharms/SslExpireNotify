@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <Fragment>
+    <!-- ================================================================
+         The service executable owns the ServiceInstall / ServiceControl,
+         so it is declared explicitly and excluded from the harvest below.
+         ================================================================ -->
+    <ComponentGroup Id="ServiceComponents" Directory="INSTALLFOLDER">
+      <Component Id="ServiceExecutable" Guid="2a7d9b41-08c5-4e6a-9f18-3d6c5b0e7a24" Bitness="always64">
+        <File Id="WorkerExe" Source="$(var.PublishDir)\SslExpireNotify.Worker.exe" KeyPath="yes" />
+
+        <ServiceInstall
+            Id="SslExpireNotifyServiceInstall"
+            Name="SslExpireNotify"
+            DisplayName="KSC SSL Expire Notify"
+            Description="KSC SSL Certificate Expiration Notification Service"
+            Type="ownProcess"
+            Start="auto"
+            ErrorControl="normal"
+            Account="LocalSystem"
+            Vital="yes">
+
+          <!-- Delayed start: the database and the network stack are ready before the first run. -->
+          <ServiceConfig DelayedAutoStart="yes" OnInstall="yes" OnReinstall="yes" />
+
+          <!-- Recovery: restart after a minute, three times, counter reset daily. -->
+          <util:ServiceConfig
+              FirstFailureActionType="restart"
+              SecondFailureActionType="restart"
+              ThirdFailureActionType="restart"
+              RestartServiceDelayInSeconds="60"
+              ResetPeriodInDays="1" />
+        </ServiceInstall>
+
+        <!-- Stopped on install/upgrade/uninstall and removed on uninstall, but never started by the
+             installer: the operator has to review appsettings.json first. -->
+        <ServiceControl
+            Id="SslExpireNotifyServiceControl"
+            Name="SslExpireNotify"
+            Stop="both"
+            Remove="uninstall"
+            Wait="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- ================================================================
+         Everything else from 'dotnet publish' (runtime, Templates/, ...).
+         Harvested, so new files never have to be listed by hand.
+         ================================================================ -->
+    <ComponentGroup Id="ApplicationFiles" Directory="INSTALLFOLDER">
+      <Files Include="$(var.PublishDir)\**">
+        <Exclude Files="$(var.PublishDir)\SslExpireNotify.Worker.exe" />
+        <Exclude Files="$(var.PublishDir)\appsettings.json" />
+        <Exclude Files="$(var.PublishDir)\*.pdb" />
+      </Files>
+    </ComponentGroup>
+
+    <!-- ================================================================
+         Configuration. appsettings.json is the operator's file:
+           * NeverOverwrite  - an upgrade never touches the live settings.
+           * Permanent       - an uninstall never deletes the production config.
+         The new version ships next to it as appsettings.default.json so new
+         keys can be merged by hand.
+         ================================================================ -->
+    <ComponentGroup Id="ConfigurationFiles" Directory="INSTALLFOLDER">
+      <Component Id="AppSettings" Guid="6c1e4f28-93b7-4a52-8d0e-71f4a2c9b6d3"
+                 NeverOverwrite="yes" Permanent="yes" Bitness="always64">
+        <File Id="AppSettingsJson" Source="$(var.PublishDir)\appsettings.json" Name="appsettings.json" KeyPath="yes" />
+      </Component>
+
+      <Component Id="AppSettingsDefault" Guid="b48a0d19-5c76-4e31-a2f9-08e7c34d5b1a" Bitness="always64">
+        <File Id="AppSettingsDefaultJson" Source="$(var.PublishDir)\appsettings.json" Name="appsettings.default.json" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- ================================================================
+         logs\ is created by the installer and kept forever: log files must
+         survive upgrades and uninstalls. LocalSystem can already write here;
+         a custom service account needs modify rights granted manually.
+         ================================================================ -->
+    <ComponentGroup Id="LogFolder" Directory="LOGSFOLDER">
+      <Component Id="LogsDirectory" Guid="d70b6e35-1af8-4c9d-84b2-9e5310cf7a68" Permanent="yes" Bitness="always64">
+        <CreateFolder />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+</Wix>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+
+  <Package
+      Name="KSC SSL Expire Notify"
+      Manufacturer="KSC Commercial Internet Co., Ltd."
+      Version="$(var.ProductVersion)"
+      UpgradeCode="8f3c1d54-6a2e-4b77-9c31-5f0b2a7d94e6"
+      Scope="perMachine"
+      Compressed="yes">
+
+    <SummaryInformation Description="KSC SSL Certificate Expiration Notification Service" />
+
+    <!-- The UpgradeCode above must NEVER change: it is what ties every version together. -->
+    <MajorUpgrade
+        Schedule="afterInstallInitialize"
+        AllowSameVersionUpgrades="yes"
+        DowngradeErrorMessage="A newer version of [ProductName] is already installed. Uninstall it first if you really need to go back to an older version." />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <Launch
+        Condition="Installed OR (VersionNT >= 603)"
+        Message="[ProductName] requires Windows Server 2012 R2 / Windows 8.1 or newer." />
+
+    <Feature Id="Main" Title="SSL Expire Notify Service" Level="1">
+      <ComponentGroupRef Id="ServiceComponents" />
+      <ComponentGroupRef Id="ApplicationFiles" />
+      <ComponentGroupRef Id="ConfigurationFiles" />
+      <ComponentGroupRef Id="LogFolder" />
+    </Feature>
+
+    <!-- Installation directory can be chosen in the UI or with INSTALLFOLDER=... on the command line. -->
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+
+    <!-- The service is deliberately NOT started by the installer: appsettings.json has to be edited first. -->
+    <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT"
+              Value="The service was installed but NOT started. Edit appsettings.json in the installation folder (connection string, Mail API URL, SMTP fallback), then start it with: Start-Service SslExpireNotify" />
+
+  </Package>
+</Wix>

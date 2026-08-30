@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <Fragment>
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="KscCompanyFolder" Name="KSC">
+        <!-- Default: C:\Program Files\KSC\SslExpireNotify -->
+        <Directory Id="INSTALLFOLDER" Name="SslExpireNotify">
+          <Directory Id="LOGSFOLDER" Name="logs" />
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+  </Fragment>
+
+</Wix>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="th" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="color-scheme" content="light dark">
+    <title>SSL Certificate Has Expired - KSC</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #eef1f4;
+            -webkit-text-size-adjust: 100%
+        }
+
+        table {
+            border-collapse: collapse
+        }
+
+        img {
+            border: 0;
+            outline: none
+        }
+
+        a {
+            text-decoration: none
+        }
+
+        @media only screen and (max-width:620px) {
+            .wrapper {
+                width: 100% !important
+            }
+        }
+    </style>
+</head>
+<body style="margin:0;padding:0;background:#eef1f4;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eef1f4;font-family:'Kanit',Tahoma,Arial,sans-serif">
+        <tr>
+            <td align="center" style="padding:24px 12px">
+                <div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#eef1f4">สัญญาบริการ SSL Certificate ใบรับรอง SSL ของท่านหมดอายุแล้ว {daysOverdue} วัน — โปรดดำเนินการ / Your Your SSL Certificate expired {daysOverdue} days ago.</div>
+                <table class="wrapper" role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background:#ffffff;font-family:'Kanit',Tahoma,Arial,sans-serif">
+
+                    <tr>
+                        <td style="background:#8e1f1f;background:linear-gradient(100deg,#8e1f1f,#c0392b);padding:26px 32px">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                <tr><td style="background:#ffffff;border-radius:8px;padding:8px 12px;width:92px"><img src="https://ksc.net/shared/images/ksclogo.png" width="76" alt="KSC" style="display:block"></td></tr>
+                                <tr><td style="padding-top:18px;color:#ffffff;font-size:20px;font-weight:bold">⛔ EXPIRED: Your SSL Certificate Has Expired</td></tr>
+                                <tr><td style="padding-top:4px;color:#cfeef5;font-size:13px">ใบรับรองหมดอายุแล้ว {daysOverdue} วัน — โปรดดำเนินการ</td></tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:28px 32px 0">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #dbe4ec;border-radius:8px">
+                                <tr><td colspan="2" style="background:#f2f7fb;padding:10px 18px;font-size:11px;font-weight:bold;color:#8e1f1f;letter-spacing:1px">CERTIFICATE DETAILS / รายละเอียดใบรับรอง</td></tr>
+                                <tr><td style="padding:11px 18px;font-size:12.5px;color:#6b7a89;border-top:1px solid #edf1f5;width:180px">Customer / ชื่อลูกค้า</td><td style="padding:11px 18px;font-size:12.5px;color:#1a2733;border-top:1px solid #edf1f5">{customerName}</td></tr>
+                                <tr><td style="padding:11px 18px;font-size:12.5px;color:#6b7a89;border-top:1px solid #edf1f5">Domain / โดเมน</td><td style="padding:11px 18px;font-size:12.5px;color:#1a2733;font-weight:bold;border-top:1px solid #edf1f5">{domain}</td></tr>
+                                <tr><td style="padding:11px 18px;font-size:12.5px;color:#6b7a89;border-top:1px solid #edf1f5">Contract Period / อายุสัญญา</td><td style="padding:11px 18px;font-size:12.5px;color:#1a2733;border-top:1px solid #edf1f5">{contractPeriod}</td></tr>
+                                <tr><td style="padding:11px 18px;font-size:12.5px;color:#6b7a89;border-top:1px solid #edf1f5">Expiry Date / วันหมดอายุ</td><td style="padding:11px 18px;font-size:12.5px;border-top:1px solid #edf1f5"><span style="background:#8e1f1f;color:#ffffff;font-weight:bold;padding:3px 10px;border-radius:4px">{expireDate} — EXPIRED {daysOverdue} days ago</span></td></tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:26px 32px 0">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-left:3px solid #8e1f1f">
+                                <tr>
+                                    <td style="padding:0 0 0 14px">
+                                        <p style="margin:0 0 10px;font-size:13px;line-height:1.85;color:#3d4852">เรียน ท่านลูกค้า</p>
+                                        <p style="margin:0 0 10px;font-size:13px;line-height:1.85;color:#3d4852">{notifyCountLineThai}ใบรับรอง SSL Certificate ตามรายละเอียดข้างต้น <strong style="color:#8e1f1f">ได้สิ้นสุดอายุไปแล้วเมื่อวันที่ {expireDateThai} รวมเป็นเวลา {daysOverdue} วัน</strong> และบริษัทยังไม่ได้รับการยืนยันความประสงค์ต่ออายุจากท่าน</p>
+                                        <p style="margin:0 0 10px;font-size:13px;line-height:1.85;color:#3d4852">ขณะนี้เว็บไซต์และระบบที่ใช้ใบรับรองนี้กำลังแสดงข้อความ <strong>"การเชื่อมต่อไม่ปลอดภัย"</strong> ต่อผู้ใช้งานทุกราย และเบราว์เซอร์บางตัวอาจปิดกั้นการเข้าถึงโดยสมบูรณ์ ซึ่งส่งผลกระทบโดยตรงต่อความน่าเชื่อถือ การทำธุรกรรมออนไลน์ และอันดับการค้นหาของเว็บไซต์</p>
+                                        <p style="margin:0 0 10px;font-size:13px;line-height:1.85;color:#3d4852">ขอความกรุณาติดต่อฝ่ายขาย <strong style="color:#123a5e">โดยเร็วที่สุด</strong> เพื่อดำเนินการดังนี้</p>
+                                        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 10px">
+                                            <tr><td style="font-size:13px;line-height:1.85;color:#3d4852;padding:0 0 2px">1. ยืนยันความประสงค์ต่ออายุและตรวจสอบข้อมูลโดเมนกับฝ่ายขาย</td></tr>
+                                            <tr><td style="font-size:13px;line-height:1.85;color:#3d4852;padding:0 0 2px">2. บริษัทเร่งจัดส่งใบเสนอราคาและเอกสารสัญญาฉบับใหม่</td></tr>
+                                            <tr><td style="font-size:13px;line-height:1.85;color:#3d4852;padding:0 0 2px">3. ทีมงานเร่งออกใบรับรองใหม่และนัดหมายติดตั้งโดยเร็วที่สุด</td></tr>
+                                        </table>
+                                        <p style="margin:0;font-size:13px;line-height:1.85;color:#3d4852">หากท่านดำเนินการต่ออายุเรียบร้อยแล้ว หรือไม่ประสงค์ต่ออายุ ขอความกรุณากดปุ่มรับทราบด้านล่างเพื่อยืนยัน มิฉะนั้นระบบจะส่งการแจ้งเตือนนี้ซ้ำทุกสัปดาห์</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr><td style="padding:22px 32px 0"><div style="height:1px;background:#e6ebf0;font-size:0;line-height:0">&nbsp;</div></td></tr>
+
+                    <tr>
+                        <td style="padding:22px 32px 0">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-left:3px solid #e8763a">
+                                <tr>
+                                    <td style="padding:0 0 0 14px">
+                                        <p style="margin:0 0 10px;font-size:13px;line-height:1.85;color:#3d4852">Dear Customer,</p>
+                                        <p style="margin:0 0 10px;font-size:13px;line-height:1.85;color:#3d4852">{notifyCountLineEn}Your SSL certificate detailed above <strong style="color:#8e1f1f">expired on {expireDateEn}, {daysOverdue} days ago</strong>, and we have not yet received your renewal confirmation.</p>
+                                        <p style="margin:0 0 10px;font-size:13px;line-height:1.85;color:#3d4852">Every website and system using this certificate is now displaying a <strong>"connection is not secure"</strong> warning to all visitors, and some browsers may block access entirely, directly affecting trust, online transactions, and your search ranking.</p>
+                                        <p style="margin:0 0 10px;font-size:13px;line-height:1.85;color:#3d4852">Please contact our Sales Department <strong style="color:#123a5e">as soon as possible</strong> so we can:</p>
+                                        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 10px">
+                                            <tr><td style="font-size:13px;line-height:1.85;color:#3d4852;padding:0 0 2px">1. Confirm your intent to renew and verify the domain details with Sales.</td></tr>
+                                            <tr><td style="font-size:13px;line-height:1.85;color:#3d4852;padding:0 0 2px">2. Issue the quotation and new contract documents on a priority basis.</td></tr>
+                                            <tr><td style="font-size:13px;line-height:1.85;color:#3d4852;padding:0 0 2px">3. Fast-track the new certificate and schedule installation as soon as possible.</td></tr>
+                                        </table>
+                                        <p style="margin:0;font-size:13px;line-height:1.85;color:#3d4852">If you have already arranged the renewal, or do not intend to renew, please click the acknowledgement button below to confirm. Otherwise this notice will be resent every week.</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:24px 32px 32px" align="center">
+                            <table role="presentation" cellpadding="0" cellspacing="0"><tr><td bgcolor="#8e1f1f" style="background:#8e1f1f;border-radius:6px"><a href="{ackLink}" style="display:inline-block;padding:12px 34px;font-size:13px;font-weight:bold;color:#ffffff;text-decoration:none">✓ รับทราบทั้งหมด / Acknowledge All — Stop These Alerts</a></td></tr></table>
+                   
+                        </td>
+                    </tr>
+
+                    <tr><td style="background:#f4f7fa;padding:18px 32px;font-size:11px;line-height:1.8;color:#6b7a89;border-top:1px solid #e6ebf0">With best regards,<br><strong style="color:#123a5e">KSC Commercial Internet Co., Ltd.</strong> — Internet &amp; Biz Solutions<br>2/4 Chubb Tower 10th Floor, Vibhavadee-Rangsit Road, Thungsonghong, Laksi, Bangkok 10210 · <a href="https://goo.gl/maps/fbuEPC2CTsx6eFJ28" style="color:#0a63a8">Map</a><br><span style="color:#9aa8b5">Automated notification — please do not reply directly to this email.</span></td></tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

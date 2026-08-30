@@ -1,0 +1,44 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+
+# Packaging output produced by deploy/build-package.ps1
+dist/
+
+# Runtime logs written next to the service
+logs/
+*.log
+
+# User specific / IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userprefs
+*.DotSettings.user
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# WiX intermediate output
+*.wixpdb
+*.wixobj
+
+# OS noise
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# Local configuration overrides - never commit real credentials.
+# The committed appsettings.json holds placeholders only; per machine settings belong here.
+appsettings.Development.json
+appsettings.Production.json
+appsettings.*.local.json

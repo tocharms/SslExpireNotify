@@ -1,0 +1,29 @@
+<Project Sdk="WixToolset.Sdk/7.0.0">
+
+  <PropertyGroup>
+    <OutputType>Package</OutputType>
+    <InstallerPlatform>x64</InstallerPlatform>
+
+    <!-- Version comes from the worker csproj through build-package.ps1, so it is only maintained in one place. -->
+    <ProductVersion Condition="'$(ProductVersion)' == ''">1.0.0</ProductVersion>
+
+    <!-- Folder produced by 'dotnet publish' for a self-contained win-x64 build. -->
+    <PublishDir Condition="'$(PublishDir)' == ''">$(MSBuildThisFileDirectory)..\..\src\SslExpireNotify.Worker\bin\Release\net10.0\win-x64\publish</PublishDir>
+
+    <OutputName>SslExpireNotify-v$(ProductVersion)</OutputName>
+    <DefineConstants>ProductVersion=$(ProductVersion);PublishDir=$(PublishDir)</DefineConstants>
+
+    <!-- ICE61: expected, AllowSameVersionUpgrades is deliberate so re-running the same MSI reinstalls
+         cleanly instead of failing with "another version is already installed".
+         1149: the MSI ServiceConfig element is the only way to set delayed auto-start; it works on
+         every Windows version this service is deployed to. -->
+    <SuppressIces>ICE61</SuppressIces>
+    <SuppressSpecificWarnings>1149</SuppressSpecificWarnings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WixToolset.UI.wixext" Version="7.0.0" />
+    <PackageReference Include="WixToolset.Util.wixext" Version="7.0.0" />
+  </ItemGroup>
+
+</Project>
