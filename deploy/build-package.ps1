@@ -137,6 +137,7 @@ if (Test-Path $staging) {
 New-Item -ItemType Directory -Path (Join-Path $staging 'database') | Out-Null
 
 Copy-Item -Path $msiTarget -Destination $staging -Force
+Copy-Item -Path (Join-Path $databaseDir 'add-ssl-certificate-primary-key.sql') -Destination (Join-Path $staging 'database') -Force
 Copy-Item -Path (Join-Path $databaseDir 'schema.sql') -Destination (Join-Path $staging 'database') -Force
 Copy-Item -Path (Join-Path $databaseDir 'seed.sql')   -Destination (Join-Path $staging 'database') -Force
 Copy-Item -Path (Join-Path $repoRoot 'deploy\README-DEPLOY.md') -Destination $staging -Force

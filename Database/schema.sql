@@ -4,8 +4,12 @@
 
    Scope:
      * Creates CertificateAlert, EmailLog and JobRunHistory.
-     * Adds a PRIMARY KEY to the existing SSL_Certificate.SSL_Cert_ID when it has
-       none, because CertificateAlert needs it as a foreign key target.
+
+   Prerequisite: dbo.SSL_Certificate.SSL_Cert_ID must already have a PRIMARY KEY
+   (CertificateAlert references it as a foreign key). Run
+   Database/add-ssl-certificate-primary-key.sql first - it is a separate script
+   so the team that owns SSL_Certificate can review/approve that change on its
+   own, without this script touching their table.
 
    The service is READ ONLY on SSL_Certificate, CUSTOMER and KSC_USERS.
    ============================================================================= */
@@ -14,7 +18,7 @@ SET NOCOUNT ON;
 GO
 
 /* -----------------------------------------------------------------------------
-   0) SSL_Certificate must have a primary key so CertificateAlert can reference it.
+   0) Guard: SSL_Certificate must already have a primary key.
    -------------------------------------------------------------------------- */
 IF OBJECT_ID(N'dbo.SSL_Certificate', N'U') IS NULL
 BEGIN
@@ -29,25 +33,7 @@ IF OBJECT_ID(N'dbo.SSL_Certificate', N'U') IS NOT NULL
         WHERE kc.parent_object_id = OBJECT_ID(N'dbo.SSL_Certificate')
           AND kc.type = 'PK')
 BEGIN
-    PRINT N'Adding PK_SSL_Certificate on dbo.SSL_Certificate (SSL_Cert_ID)...';
-
-    -- A primary key column must be NOT NULL.
-    IF EXISTS (
-        SELECT 1
-        FROM sys.columns c
-        WHERE c.object_id = OBJECT_ID(N'dbo.SSL_Certificate')
-          AND c.name = N'SSL_Cert_ID'
-          AND c.is_nullable = 1)
-    BEGIN
-        ALTER TABLE dbo.SSL_Certificate ALTER COLUMN SSL_Cert_ID INT NOT NULL;
-    END
-
-    ALTER TABLE dbo.SSL_Certificate
-        ADD CONSTRAINT PK_SSL_Certificate PRIMARY KEY (SSL_Cert_ID);
-END
-ELSE
-BEGIN
-    PRINT N'dbo.SSL_Certificate already has a primary key - nothing to do.';
+    RAISERROR(N'dbo.SSL_Certificate has no PRIMARY KEY. Run Database/add-ssl-certificate-primary-key.sql first.', 16, 1);
 END
 GO
 

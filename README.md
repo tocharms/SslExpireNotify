@@ -28,6 +28,7 @@ SslExpireNotify.sln
 │   ├── Options/                   binding + validator ของแต่ละ section
 │   └── Templates/                 อีเมล HTML 6 ไฟล์ (copy ไป output ตอน build)
 ├── tests/SslExpireNotify.Tests/   xUnit — 133 tests
+├── Database/add-ssl-certificate-primary-key.sql   เพิ่ม PK ให้ SSL_Certificate (รันก่อน schema.sql เสมอ)
 ├── Database/schema.sql            สร้างตารางของระบบนี้ (idempotent)
 ├── Database/seed.sql              ข้อมูลทดสอบ (test DB เท่านั้น)
 ├── installer/SslExpireNotify.Installer/   WiX v7 (MSBuild SDK-style)
@@ -97,19 +98,23 @@ SslExpireNotify-v1.0.0-deploy.zip     (MSI + database/schema.sql + database/seed
 
 ดูรายละเอียดทั้งหมดใน [`deploy/README-DEPLOY.md`](deploy/README-DEPLOY.md) — สรุปสั้น ๆ
 
-1. รัน `Database/schema.sql` บน SQL Server
-2. `msiexec /i SslExpireNotify-v1.0.0.msi`
-3. แก้ `appsettings.json` (connection string, Mail API URL, SMTP fallback, `AckBaseUrl`)
-4. ทดสอบด้วย `RunOnStartup = true` + `DryRun = true` แล้วดู log
-5. ตั้งกลับเป็น `false` ทั้งคู่ แล้ว `Start-Service SslExpireNotify`
+1. รัน `Database/add-ssl-certificate-primary-key.sql` บน SQL Server (ให้ DBA ที่ดูแล `SSL_Certificate` รัน/อนุมัติ)
+2. รัน `Database/schema.sql` บน SQL Server
+3. `msiexec /i SslExpireNotify-v1.0.0.msi`
+4. แก้ `appsettings.json` (connection string, Mail API URL, SMTP fallback, `AckBaseUrl`)
+5. ทดสอบด้วย `RunOnStartup = true` + `DryRun = true` แล้วดู log
+6. ตั้งกลับเป็น `false` ทั้งคู่ แล้ว `Start-Service SslExpireNotify`
 
 MSI **ไม่ start service ให้อัตโนมัติ** โดยตั้งใจ เพราะต้องแก้ config ก่อนเสมอ
 
 ### รัน schema / seed
 
 ```powershell
-sqlcmd -S SQLSERVER01 -d KSC_SSL -E -i .\Database\schema.sql   # ปลอดภัย รันซ้ำได้
+sqlcmd -S SQLSERVER01 -d KSC_SSL -E -i .\Database\add-ssl-certificate-primary-key.sql   # ต้องรันก่อนเสมอ (ปลอดภัย รันซ้ำได้)
+sqlcmd -S SQLSERVER01 -d KSC_SSL -E -i .\Database\schema.sql                            # ปลอดภัย รันซ้ำได้
 ```
+
+`schema.sql` จะ **fail ทันที** ถ้า `SSL_Certificate` ยังไม่มี PRIMARY KEY — รัน `add-ssl-certificate-primary-key.sql` ก่อนเสมอ
 
 `seed.sql` มี `DELETE` ล้างตาราง `CUSTOMER` / `KSC_USERS` / `SSL_Certificate` — **ห้ามรันบน production**
 และต้องแก้ `@ConfirmTestDatabase = 1` ในไฟล์ก่อนถึงจะทำงาน

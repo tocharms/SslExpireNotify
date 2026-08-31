@@ -3,10 +3,11 @@
 แพ็กเกจนี้ประกอบด้วย
 
 ```
-SslExpireNotify-v<version>.msi     ตัวติดตั้ง Windows Service
-database/schema.sql                สร้างตารางของระบบนี้ (รันซ้ำได้)
-database/seed.sql                  ข้อมูลทดสอบ — สำหรับ test DB เท่านั้น
-README-DEPLOY.md                   ไฟล์นี้
+SslExpireNotify-v<version>.msi                   ตัวติดตั้ง Windows Service
+database/add-ssl-certificate-primary-key.sql     เพิ่ม PK ให้ SSL_Certificate (รันก่อน schema.sql เสมอ)
+database/schema.sql                              สร้างตารางของระบบนี้ (รันซ้ำได้)
+database/seed.sql                                ข้อมูลทดสอบ — สำหรับ test DB เท่านั้น
+README-DEPLOY.md                                 ไฟล์นี้
 ```
 
 > # ⚠️ ห้ามรัน `seed.sql` บนเครื่อง production เด็ดขาด
@@ -21,16 +22,19 @@ README-DEPLOY.md                   ไฟล์นี้
 
 ### 1.1 เตรียมฐานข้อมูล
 
-รัน `database/schema.sql` บน SQL Server ที่เก็บตาราง `SSL_Certificate`
+รันบน SQL Server ที่เก็บตาราง `SSL_Certificate` **ตามลำดับนี้เท่านั้น**
 
 ```powershell
+sqlcmd -S SQLSERVER01 -d KSC_SSL -E -i .\database\add-ssl-certificate-primary-key.sql
 sqlcmd -S SQLSERVER01 -d KSC_SSL -E -i .\database\schema.sql
 ```
 
-สคริปต์จะ
-- เพิ่ม `PRIMARY KEY` ให้ `SSL_Certificate.SSL_Cert_ID` ถ้ายังไม่มี (ตรวจก่อนเสมอ)
-- สร้าง `CertificateAlert`, `EmailLog`, `JobRunHistory` พร้อม index
-- ข้ามทุกอย่างที่มีอยู่แล้ว — รันซ้ำได้ปลอดภัย
+- `add-ssl-certificate-primary-key.sql` — เพิ่ม `PRIMARY KEY` ให้ `SSL_Certificate.SSL_Cert_ID` ถ้ายังไม่มี
+  (ตรวจก่อนเสมอ, idempotent) ไฟล์นี้แยกออกมาต่างหากเพื่อให้ทีม/DBA ที่ดูแล `SSL_Certificate` โดยเฉพาะ
+  ตรวจสอบและอนุมัติได้เฉพาะส่วนที่แตะตารางของตัวเอง — **ต้องรันให้สำเร็จก่อน `schema.sql` เสมอ**
+- `schema.sql` — สร้าง `CertificateAlert`, `EmailLog`, `JobRunHistory` พร้อม index (idempotent)
+  จะ **fail ทันทีถ้า `SSL_Certificate` ยังไม่มี PRIMARY KEY** (เพราะ `CertificateAlert` ต้องอ้างอิงกลับไปเป็น foreign key)
+- ทั้งสองไฟล์ข้ามทุกอย่างที่มีอยู่แล้ว — รันซ้ำได้ปลอดภัย
 
 **สิทธิ์ของ user ที่ service ใช้** ต้องมีอย่างน้อย
 - `SELECT` บน `SSL_Certificate`, `CUSTOMER`, `KSC_USERS` (อ่านอย่างเดียว — service ไม่เขียนตารางเหล่านี้)
