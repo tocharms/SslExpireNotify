@@ -138,7 +138,12 @@
 ### 3.1 ตารางที่**มีอยู่แล้ว**ในระบบ (ข้อมูลเป็น read-only)
 
 ระบบนี้อ่านข้อมูลจากตารางเดิมของ KSC 3 ตาราง — แอป**อ่านข้อมูลอย่างเดียว (read-only)** ห้าม INSERT/UPDATE/DELETE
-ยกเว้นเรื่องเดียว: `schema.sql` ต้องตรวจสอบและ**เพิ่ม PRIMARY KEY ให้ `SSL_Certificate.SSL_Cert_ID` ถ้ายังไม่มี** (ตรวจจาก `sys.key_constraints` ก่อน แล้วค่อย `ALTER TABLE ... ADD CONSTRAINT PK_SSL_Certificate PRIMARY KEY (SSL_Cert_ID)`) เพื่อรองรับ FK จาก `CertificateAlert`:
+ยกเว้นเรื่องเดียว: ต้องมี**PRIMARY KEY บน `SSL_Certificate.SSL_Cert_ID`** เพื่อรองรับ FK จาก `CertificateAlert`
+(ตรวจจาก `sys.key_constraints` ก่อน แล้วค่อย `ALTER TABLE ... ADD CONSTRAINT PK_SSL_Certificate PRIMARY KEY (SSL_Cert_ID)`)
+— แยกออกเป็นสคริปต์ของตัวเอง **`Database/add-ssl-certificate-primary-key.sql`** ต่างหากจาก `schema.sql`
+เพื่อให้ทีม/DBA ที่ดูแล `SSL_Certificate` โดยเฉพาะตรวจสอบและอนุมัติได้เฉพาะส่วนที่แตะตารางของตัวเอง
+โดยไม่ต้องเกี่ยวกับตารางใหม่ที่ `schema.sql` สร้าง ต้องรันสคริปต์นี้ให้สำเร็จก่อน `schema.sql` เสมอ —
+`schema.sql` เองแค่ตรวจสอบ (guard) ว่ามี PK อยู่แล้ว ถ้ายังไม่มีจะ error ทันทีไม่ทำอะไรต่อ:
 
 ```sql
 -- ลูกค้า (มีอยู่แล้ว)
@@ -549,6 +554,7 @@ SslExpireNotify/
 │   ├── Models/        (POCO ตรงกับตาราง + enum AlertLevel, AlertStatus)
 │   └── Options/       (JobOptions, MailApiOptions, EmailTemplateOptions — bind ด้วย IOptions<T>, validate ตอน startup)
 ├── Database/
+│   ├── add-ssl-certificate-primary-key.sql
 │   ├── schema.sql
 │   └── seed.sql
 ├── installer/SslExpireNotify.Installer/
@@ -673,11 +679,11 @@ SslExpireNotify/
 2. `dotnet build installer/SslExpireNotify.Installer -c Release` (WiX v7 build ผ่าน NuGet ได้เลย)
    - ไฟล์ publish จำนวนมาก ให้ใช้ **WiX Files element / harvesting** (`<Files Include="$(PublishDir)\**">`) ไม่ต้อง list ทีละไฟล์ แต่ต้อง exclude `appsettings.json` ออกจาก harvest แล้วประกาศเป็น Component แยกตามข้อ 8.1 (NeverOverwrite)
 3. ได้ผลลัพธ์ `dist/SslExpireNotify-v{version}.msi`
-4. สร้าง `dist/SslExpireNotify-v{version}-deploy.zip` บรรจุ: MSI + `database/schema.sql` + `database/seed.sql` + `README-DEPLOY.md`
+4. สร้าง `dist/SslExpireNotify-v{version}-deploy.zip` บรรจุ: MSI + `database/add-ssl-certificate-primary-key.sql` + `database/schema.sql` + `database/seed.sql` + `README-DEPLOY.md`
    (database scripts ไม่รวมใน MSI เพราะรันบน SQL Server คนละเครื่องกับ service)
 
 ### 8.3 README-DEPLOY.md ต้องครอบคลุม
-- ขั้นตอนติดตั้งครั้งแรก: รัน `schema.sql` บน SQL Server → ติดตั้ง MSI → แก้ `appsettings.json` (connection string, Mail API URL, SMTP fallback) → ทดสอบด้วย `RunOnStartup = true` แล้วปิดกลับ → `Start-Service SslExpireNotify`
+- ขั้นตอนติดตั้งครั้งแรก: รัน `add-ssl-certificate-primary-key.sql` (ให้ทีม/DBA ที่ดูแล `SSL_Certificate` รัน/อนุมัติ) → รัน `schema.sql` บน SQL Server → ติดตั้ง MSI → แก้ `appsettings.json` (connection string, Mail API URL, SMTP fallback) → ทดสอบด้วย `RunOnStartup = true` แล้วปิดกลับ → `Start-Service SslExpireNotify`
 - ขั้นตอน upgrade: รัน MSI เวอร์ชันใหม่ทับได้เลย → ตรวจ `appsettings.default.json` ว่ามี key ใหม่ต้อง merge ไหม → start service
 - ตัวอย่างคำสั่ง silent install / uninstall สำหรับติดตั้งหลายเครื่อง
 - วิธีตรวจ log และ troubleshoot service ไม่ start
