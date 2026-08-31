@@ -50,6 +50,12 @@
 SET NOCOUNT ON;
 GO
 
+-- sqlcmd scripting directive: stop the whole script on the first error, so the
+-- RAISERROR guard below actually halts execution instead of just printing and
+-- falling through to the ALTER TABLE statements that depend on it.
+:on error exit
+GO
+
 IF OBJECT_ID(N'dbo.SSL_Certificate', N'U') IS NULL
 BEGIN
     RAISERROR(N'Table dbo.SSL_Certificate was not found. Run this script against the KSC database that holds it.', 16, 1);
@@ -60,8 +66,13 @@ IF OBJECT_ID(N'dbo.SSL_Certificate', N'U') IS NOT NULL
    AND NOT EXISTS (
         SELECT 1
         FROM sys.key_constraints kc
+        JOIN sys.index_columns ic
+            ON ic.object_id = kc.parent_object_id AND ic.index_id = kc.unique_index_id
+        JOIN sys.columns c
+            ON c.object_id = ic.object_id AND c.column_id = ic.column_id
         WHERE kc.parent_object_id = OBJECT_ID(N'dbo.SSL_Certificate')
-          AND kc.type = 'PK')
+          AND kc.type = 'PK'
+          AND c.name = N'SSL_Cert_ID')
 BEGIN
     PRINT N'Adding PK_SSL_Certificate on dbo.SSL_Certificate (SSL_Cert_ID)...';
 
@@ -81,7 +92,7 @@ BEGIN
 END
 ELSE
 BEGIN
-    PRINT N'dbo.SSL_Certificate already has a primary key - nothing to do.';
+    PRINT N'dbo.SSL_Certificate already has a primary key on SSL_Cert_ID - nothing to do.';
 END
 GO
 

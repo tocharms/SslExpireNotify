@@ -17,8 +17,14 @@
 SET NOCOUNT ON;
 GO
 
+-- sqlcmd scripting directive: stop the whole script on the first error from here on,
+-- so the RAISERROR guards below actually halt execution instead of just printing and
+-- falling through to statements (like the CREATE TABLE below) that depend on them.
+:on error exit
+GO
+
 /* -----------------------------------------------------------------------------
-   0) Guard: SSL_Certificate must already have a primary key.
+   0) Guard: SSL_Certificate must already have a primary key on SSL_Cert_ID.
    -------------------------------------------------------------------------- */
 IF OBJECT_ID(N'dbo.SSL_Certificate', N'U') IS NULL
 BEGIN
@@ -30,10 +36,15 @@ IF OBJECT_ID(N'dbo.SSL_Certificate', N'U') IS NOT NULL
    AND NOT EXISTS (
         SELECT 1
         FROM sys.key_constraints kc
+        JOIN sys.index_columns ic
+            ON ic.object_id = kc.parent_object_id AND ic.index_id = kc.unique_index_id
+        JOIN sys.columns c
+            ON c.object_id = ic.object_id AND c.column_id = ic.column_id
         WHERE kc.parent_object_id = OBJECT_ID(N'dbo.SSL_Certificate')
-          AND kc.type = 'PK')
+          AND kc.type = 'PK'
+          AND c.name = N'SSL_Cert_ID')
 BEGIN
-    RAISERROR(N'dbo.SSL_Certificate has no PRIMARY KEY. Run Database/add-ssl-certificate-primary-key.sql first.', 16, 1);
+    RAISERROR(N'dbo.SSL_Certificate has no PRIMARY KEY on SSL_Cert_ID. Run Database/add-ssl-certificate-primary-key.sql first.', 16, 1);
 END
 GO
 

@@ -76,7 +76,7 @@ dotnet run --project src/SslExpireNotify.Worker    # รันเป็น conso
 
 ```
 SslExpireNotify-v1.0.0.msi
-SslExpireNotify-v1.0.0-deploy.zip     (MSI + database/schema.sql + database/seed.sql + README-DEPLOY.md)
+SslExpireNotify-v1.0.0-deploy.zip     (MSI + database/add-ssl-certificate-primary-key.sql + database/schema.sql + database/seed.sql + README-DEPLOY.md)
 ```
 
 เลขเวอร์ชันอ่านจาก `<Version>` ใน `SslExpireNotify.Worker.csproj` ที่เดียว แล้วส่งต่อให้ MSI
